@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [[ ( $@ == "--help") ||  $@ == "-h" ]]
 then
     echo ""
