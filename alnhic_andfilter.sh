@@ -1,7 +1,7 @@
 if [[ ( $@ == "--help") ||  $@ == "-h" ]]
 then
     echo ""
-    echo "Usage: ./alignhic_identifycontacts <ASSEMBLY> <HIC1> <HIC2> <OUT_PREFIX> <TMPDIR>"
+    echo "Usage: ./alnhic_andfilter.sh <ASSEMBLY> <HIC1> <HIC2> <OUT_PREFIX> <TMPDIR>"
     echo ""
     echo "Requirements:"
     echo "	bwa"
