@@ -6,4 +6,5 @@
 ./hifiasm.sh
 ##Align Hi-C reads to contigs
 ./aln_hic.sh
-##
+##Use pairtools to identify valid ligation junctions, sort, and dedup Hi-C alignments
+./pairtools.sh
