@@ -10,5 +10,6 @@ home=/home/FCAM/msmith
 core=/core/projects/EBP/smith
 scratch=/scratch/msmith
 gid="intDF011"
+asm=$1 
 IN_BAM="${scratch}/${gid}_alignedhic.bam"
-CHROM_SIZES=${home}/yahs/contigs/intDF011.asm.hic.hap1.p_ctg.chrom.sizes
+CHROM_SIZES="${home}/yahs/contigs/${asm}.chrom.sizes"
