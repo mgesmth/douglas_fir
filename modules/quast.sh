@@ -6,9 +6,8 @@ then
     echo "Usage: ./quast.sh <ASSEMBLY> <OUT_PREFIX>"
     echo ""
     echo "Requirements:"
-    echo "	bwa"
-    echo "	samtools"
-    echo "	pairtools"
+    echo "	Python > 3"
+    echo "	Quast"
     echo ""
     echo "<ASSEMBLY>        Path to assembly to be assessed."
     echo "<OUT_PREFIX>      A prefix for output, including path to out directory."
@@ -24,4 +23,4 @@ module load quast/5.2.0
 asm=$1
 out=$2
 
-quast.py -t 12 --split-scaffolds --large -o ${out} ${asm}
+python3 quast.py -t 12 --split-scaffolds --large -o ${out} ${asm}
