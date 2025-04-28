@@ -16,8 +16,6 @@ then
      exit 0
 fi
 
-#Required Software
-module load Hifiasm/0.20.0
 
 gid="$1"
 hic1=$2
