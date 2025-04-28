@@ -21,11 +21,6 @@ then
 	exit 0
 fi
 
-#Required Software
-module load bwa/0.7.17
-module load samtools/1.20
-module load pairtools/0.2.2
-
 assembly=$1
 hic_R1=$2
 hic_R2=$3
