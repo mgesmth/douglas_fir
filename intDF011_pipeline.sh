@@ -41,3 +41,7 @@ scaff_prim_asm="${scaff_outdir}/${PREFIX}_scaffolds_final.fa"
 ###Ran with threads=12 and mem=150G
 quast_out=/home/FCAM/msmith/quast_out/1_3
 ./quast.sh "${scaff_prim_asm}" "${quast_out}"
+
+##Run Meryl, GenomeScope2 and Merqury to get kmer assembly quality statistics
+kmer_out=/core/projects/EBP/smith/merqury_out
+./kmers.sh -t 18 -k 21 -h "${HIFI}" -o "${kmer_out}" -x -p "${scaff_prim_asm}"
