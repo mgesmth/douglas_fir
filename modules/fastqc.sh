@@ -16,9 +16,6 @@ then
 	exit 0
 fi
 
-module load fastqc/0.12.1
-module load MultiQC/1.10.1 
-
 if [ $# -eq 2 ] ; then
   outdir=$1
   read=$2
