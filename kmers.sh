@@ -9,7 +9,7 @@ then
     echo ""
     echo "Requirements:"
     echo "  R > 4.0 with argparse, ggplot2, scales, minpack.lm"
-    echo "	meryl"
+    echo "  meryl"
     echo "  genomescope2.0"
     echo "  merqury"
     echo ""
