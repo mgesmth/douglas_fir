@@ -34,26 +34,17 @@ threads=1
 OPTSTRING="t:k:h:p:a:x:"
 while getopts ${OPTSTRING} opt
 do
-    case ${opt} in
-	t)
-	 threads=${OPTARG};;
-	k)
-   k=${OPTARG};;
-  h)
-	 hifi=${OPTARG};;
-  o)
-   output=${OPTARG};;
-	p)
-	 prim=${OPTARG};;
-	a)
-	 alt=${OPTARG};;
-  x)
-   asm_assessment="true"
-   ;;
+case ${opt} in
+  t) threads=${OPTARG};;
+  k) k=${OPTARG};;
+  h) hifi=${OPTARG};;
+  o) output=${OPTARG};;
+  p) prim=${OPTARG};;
+  a) alt=${OPTARG};;
+  x) asm_assessment="true" ;;
   ?)
     echo "invalid option: ${OPTARG}"
-    exit 1
-	  ;;
+    exit 1 ;;
   esac
 done
 
