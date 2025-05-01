@@ -12,7 +12,7 @@ module load R/4.2.2 meryl/1.4.1 merqury/1.3
 export PATH="/home/FCAM/msmith/R/x86_64-pc-linux-gnu-library/4.2:$PATH"
 export PATH="/core/projects/EBP/smith/bin/genomescope2.0:$PATH"
 kmers_out=/core/projects/EBP/smith/merqury_out/intDF_kmers
-./kmers.sh -t 12 -k 21 -h "$HIFI" -o "$kmers_out" -x -p "$INT_PRIM" "$INT_ALT"
+./kmers.sh -t 12 -k 21 -h "$HIFI" -o "$kmers_out" -x -p "$INT_PRIM" -a "$INT_ALT"
 module unload R/4.2.2 meryl/1.4.1 merqury/1.3
 
 ##Run Quast to get basic assembly stats (N50 etc.)
