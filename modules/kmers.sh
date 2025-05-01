@@ -3,7 +3,7 @@
 if [[ ( $@ == "--help") ||  $@ == "-h" ]]
 then
     echo ""
-    echo "Usage: ./kmers.sh -t <THREADS> -k <KMER_SIZE> -h <HIFI.fastq.gz> -o <OUTDIR> [-x -p <ASM1> -a <ASM2>]"
+    echo "Usage: ./kmers.sh -t <THREADS> -k <KMER_SIZE> -h <HIFI.fastq.gz> -o <OUTPREFIX> [-x -p <ASM1> -a <ASM2>]"
     echo ""
     echo "Get kmer statistics (including completeness and QV) for an assembly."
     echo ""
