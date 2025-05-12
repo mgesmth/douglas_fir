@@ -4,8 +4,8 @@
 #Most scripts have a help message, so call the script with -h or --help to see positional arguments
 
 #RESOURCES:
-####Max threads needed: 36
-####Max RAM needed: 1Tb
+####threads needed: 36
+####RAM needed: ~1Tb
 ####Time: >2 weeks (my server doesn't have time limits, so unsure about exact wall time).
 
 HIFI=/home/FCAM/msmith/hifi_data/intDF_allhifi.fastq.gz
