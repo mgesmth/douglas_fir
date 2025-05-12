@@ -8,6 +8,7 @@
 ####RAM needed: ~1Tb
 ####Time: >2 weeks (my server doesn't have time limits, so unsure about exact wall time).
 
+scratch=/scratch/msmith
 HIFI=/home/FCAM/msmith/hifi_data/intDF_allhifi.fastq.gz
 HIC_R1=/home/FCAM/msmith/hiC_data/allhiC_R1.fastq.gz
 HIC_R2=/home/FCAM/msmith/hiC_data/allhiC_R2.fastq.gz
@@ -33,8 +34,8 @@ module unload Hifiasm/0.20.0
 ##Align Hi-C reads to contigs and use pairtools to identify contacts, sort and dedup
 ###Ran with threads=36 and mem=1000G
 module load samtools/1.20 bwa/0.7.17 pairtools/0.2.2
-./modules/alnhic_andfilter.sh "${contig_prim_asm}" "${HIC_R1}" "${HIC_R2}" "${PREFIX}"
-filtered_bam=/scratch/msmith/
+./modules/alnhic_andfilter.sh "${contig_prim_asm}" "${HIC_R1}" "${HIC_R2}" "${scratch}/${PREFIX}" "${scratch}"
+filtered_bam=/scratch/msmith/"${PREFIX}_nodups.bam"
 module unload samtools/1.20 bwa/0.7.17 pairtools/0.2.2
 
 ##Scaffold contig assembly using validated Hi-C contacts
