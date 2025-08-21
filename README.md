@@ -2,6 +2,8 @@
 
 Code is being added as the project progresses.
 
+All executable code is found in the modules directory and is referred to appropriately in each "pipeline" script.
+
 ## Assembly Quality Assessment
 
 ### Statistics 
