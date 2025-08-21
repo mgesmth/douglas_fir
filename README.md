@@ -1,6 +1,12 @@
 # Douglas-fir Genomics Pipeline
 
-Here I have including all of the final versions of the scripts I used for the interior Douglas-fir genomics projects out of the Booker lab.
+Code is being added as the project progresses.
+
+## Assembly Quality Assessment
+
+### Statistics 
+
+QUAST/, meryl/, merqury/, GenomeScope/ and BUSCO/ were used to gather quality statistics for both interior and coastal Douglas-fir genome assemblies as appropriate. 
 
 ```sh
 #The code used to build the intDF011 assembly (not CBP):
