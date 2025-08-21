@@ -26,15 +26,6 @@ quast_out=/home/FCAM/msmith/quast_out
 ./modules/quast.sh -t 12 -a "$COASTAL" -o "${quast_out}/coastal"
 module unload python/3.8.1 quast/5.2.0
 
-#Hi-C contact maps - this requires a lot of resources, i.e. at least 36 threads and 1Tb RAM (as well as tmp disk space) to run reasonably quickly
-#Note that RAM is set internally within these scripts and assumes at least 1Tb of RAM
-module load bwa/0.7.17 samtools/1.20 pairtools/0.2.2 juicer/1.22.01 python/3.8.1
-PREFIX="interior_primary_contacts"
-./modules/alnhic_and_filter.sh "$INT_PRIM" "$HIC1" "$HIC2" "${scratch}/${PREFIX}" "$scratch"
-PAIRS="${scratch}/${PREFIX}_nodups.pairs"
-topdir=/core/projects/EBP/smith/juicer_primary
-./modules/juicer_tools.sh -t 36 -d "$topdir" -c "$PAIRS" -g "$PREFIX" -z "$INT_PRIM" -o "${topdir}/${PREFIX}" -x "$scratch"
-module unload bwa/0.7.17 samtools/1.20 pairtools/0.2.2 juicer/1.22.01 python/3.8.1
-#From here, ran Juicebox on a local machine to control the setting of java variables. Code looked something like:
-#java -Xms10G -Xms30G -jar Juicebox.jar "${PREFIX}.hic"
+##BUSCO for BUSCO scores (Eukaryota, Viridiplantae, and Embryophyta databases)
+
 
