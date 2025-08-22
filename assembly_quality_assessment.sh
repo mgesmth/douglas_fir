@@ -27,5 +27,15 @@ quast_out=/home/FCAM/msmith/quast_out
 module unload python/3.8.1 quast/5.2.0
 
 ##BUSCO for BUSCO scores (Eukaryota, Viridiplantae, and Embryophyta databases)
-
+source /home/FCAM/msmith/busco/.venv/bin/activate
+module load blast/2.7.1 augustus/3.6.0 hmmer/3.3.2 R/4.2.2 java/17.0.2 bbmap/39.08 prodigal/2.6.3
+export PATH="/core/projects/EBP/smith/bin/miniprot:$PATH"
+#Augustus needs a writable config path to work - copied from the module directory on my server
+export AUGUTUS_CONFIG_PATH="/core/projects/EBP/smith/busco/config"
+#My R library
+export PATH="/home/FCAM/msmith/R/x86_64-pc-linux-gnu-library/4.2:$PATH"
+for 
+out1="/home/FCAM/msmith/busco/prim_"
+out2="${home}/busco/alt_${db}"
+out3="${home}/busco/coa_${db}"
 
