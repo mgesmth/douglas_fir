@@ -598,3 +598,184 @@ then
 	echo "(-: Finished sorting all sorted files into a single merge."
     fi
 fi
+
+if [ -n "$mergeonly" ]
+then
+    exit 0
+fi
+
+#REMOVE DUPLICATES 
+if [ -z $final ] && [ -z $postproc ]
+then
+    if [ $justexact -eq 1 ]
+    then
+	samtools view $sthreadstring -h $outputdir/merged_sort.bam | awk -f $juiceDir/scripts/common/dups_sam.awk -v nowobble=1 | samtools view -b > $outputdir/merged_dedup.bam && rm $outputdir/merged_sort.bam
+    else
+	samtools view $sthreadstring -h $outputdir/merged_sort.bam | awk -f $juiceDir/scripts/common/dups_sam.awk | samtools view -b > $outputdir/merged_dedup.bam && rm $outputdir/merged_sort.bam
+    fi
+    if [ $? -ne 0 ]
+    then
+	echo "***! Mark duplicates of $outputdir/merged_sort.bam failed."
+	exit 1
+    else
+	echo "(-:  Mark duplicates done successfully"
+
+    fi
+fi
+
+
+if [ -n "$deduponly" ]
+then
+    exit 0
+fi
+
+#CREATE HIC FILES 
+if [ -z "$genomePath" ]
+then
+    #If no path to genome is give, use genome ID as default.
+    genomePath=$genomeID
+fi
+
+#Skip if post-processing only is required
+if [ -z $postproc ]
+    then
+    # if we haven't already zipped up merged_dedup
+    if [ ! -s  ${outputdir}/merged_dedup.bam ]
+    then 
+        # Check that dedupping worked properly
+        # in ideal world, we would check this in split_rmdups and not remove before we know they are correct
+	size1=$(samtools view $sthreadstring -h ${outputdir}/merged_sort.bam | wc -l | awk '{print $1}')
+	size2=$(wc -l ${outputdir}/merged_dedup.sam | awk '{print $1}')
+	
+	if [ $size1 -ne $size2 ]
+	then
+	    echo "***! Error! The sorted file and dups/no dups files do not add up, or were empty."
+	    exit 1
+	fi
+	samtools view $sthreadstring -F 1024 -O sam ${outputdir}/merged_dedup.sam | awk -v mapq=1 -f ${juiceDir}/scripts/common/sam_to_pre.awk > ${outputdir}/merged1.txt
+	samtools view $sthreadstring -F 1024 -O sam ${outputdir}/merged_dedup.sam | awk -v mapq=30 -f ${juiceDir}/scripts/common/sam_to_pre.awk > ${outputdir}/merged30.txt
+    else
+	if [ ! -s ${outputdir}/merged1.txt ] 
+	then
+	    samtools view $sthreadstring -F 1024 -O sam ${outputdir}/merged_dedup.bam | awk -v mapq=1 -f ${juiceDir}/scripts/common/sam_to_pre.awk > ${outputdir}/merged1.txt
+	fi
+	if [ ! -s ${outputdir}/merged30.txt ]
+	then
+	    samtools view $sthreadstring -F 1024 -O sam ${outputdir}/merged_dedup.bam | awk -v mapq=30 -f ${juiceDir}/scripts/common/sam_to_pre.awk > ${outputdir}/merged30.txt
+	fi
+    fi
+
+    if [[ $threadsHic -gt 1 ]]
+    then
+	if [ ! -s ${outputdir}/merged1_index.txt ]
+	then
+	    time ${juiceDir}/scripts/common/index_by_chr.awk ${outputdir}/merged1.txt 500000 > ${outputdir}/merged1_index.txt
+	fi
+	if [ ! -s ${outputdir}/merged30_index.txt ]
+	then
+	    time ${juiceDir}/scripts/common/index_by_chr.awk ${outputdir}/merged30.txt 500000 > ${outputdir}/merged30_index.txt
+	fi
+    fi
+
+    if [ ! -s  ${outputdir}/merged_dedup.bam ]
+    then
+	if samtools view -b $sthreadstring ${outputdir}/merged_dedup.sam > ${outputdir}/merged_dedup.bam
+	then
+	    rm ${outputdir}/merged_dedup.sam
+	    rm ${outputdir}/merged_sort.bam
+	fi
+    fi
+
+    if [ "$methylation" = 1 ]
+    then
+	$load_methyl
+	samtools sort $sthreadstring ${outputdir}/merged_dedup.bam > ${outputdir}/merged_dedup_sort.bam
+	$call_methyl extract -F 1024 --keepSingleton --keepDiscordant $refSeq ${outputdir}/merged_dedup_sort.bam
+	$call_methyl extract -F 1024 --keepSingleton --keepDiscordant --cytosine_report  --CHH --CHG $refSeq ${outputdir}/merged_dedup_sort.bam
+	${juiceDir}/scripts/common/conversion.sh ${outputdir}/merged_dedup_sort.cytosine_report.txt > ${outputdir}/conversion_report.txt
+	rm ${outputdir}/merged_dedup_sort.bam ${outputdir}/merged_dedup_sort.cytosine_report.txt*
+    fi
+
+
+    export IBM_JAVA_OPTIONS="-Xmx1024m -Xgcthreads1"
+    export _JAVA_OPTIONS="-Xmx1024m -Xms1024m"
+    tail -n1 $headfile | awk '{printf"%-1000s\n", $0}' > $outputdir/inter.txt
+    if [ $singleend -eq 1 ] 
+    then
+	ret=$(samtools view $sthreadstring -f 1024 -F 256 $outputdir/merged_dedup.bam | awk '{if ($0~/rt:A:7/){singdup++}else{dup++}}END{print dup,singdup}')
+	dups=$(echo $ret | awk '{print $1}')
+	singdups=$(echo $ret | awk '{print $2}')
+	cat $splitdir/*.res.txt | awk -v dups=$dups -v singdups=$singdups -v ligation=$ligation -v singleend=1 -f ${juiceDir}/scripts/common/stats_sub.awk >> $outputdir/inter.txt
+    else
+	dups=$(samtools view -c -f 1089 -F 256 $sthreadstring $outputdir/merged_dedup.bam)
+	cat $splitdir/*.res.txt | awk -v dups=$dups -v ligation=$ligation -f ${juiceDir}/scripts/common/stats_sub.awk >> $outputdir/inter.txt
+    fi
+    
+    cp $outputdir/inter.txt $outputdir/inter_30.txt
+
+#statistics command keeps failing and so removing it
+    #if [ $assembly -eq 1 ] 
+    #then
+	#${juiceDir}/scripts/common/juicer_tools statistics $site_file $outputdir/inter.txt $outputdir/merged1.txt none
+	#${juiceDir}/scripts/common/juicer_tools statistics $site_file $outputdir/inter_30.txt $outputdir/merged30.txt none
+    #else
+	#${juiceDir}/scripts/common/juicer_tools statistics $site_file $outputdir/inter.txt $outputdir/merged1.txt $genomePath
+	#${juiceDir}/scripts/common/juicer_tools statistics $site_file $outputdir/inter_30.txt $outputdir/merged30.txt $genomePath
+    #fi
+
+    # if early exit, we stop here, once the stats are calculated
+    if [ ! -z "$earlyexit" ]
+    then
+        if [ $assembly -eq 1 ]
+        then
+            samtools view $sthreadstring -O SAM -F 1024 $outputdir/merged_dedup.*am | awk -v mnd=1 -f ${juiceDir}/scripts/common/sam_to_pre.awk > ${outputdir}/merged_nodups.txt
+	fi
+	export splitdir=${splitdir}; export outputdir=${outputdir}; export early=1; 
+	if ${juiceDir}/scripts/common/check.sh && [ "$cleanup" = 1 ]
+	then
+	    #${juiceDir}/scripts/common/cleanup.sh
+		echo "skipping cleanup"	
+	fi
+	exit
+    fi
+    export IBM_JAVA_OPTIONS="-Xmx50G -Xgcthreads1"
+    export _JAVA_OPTIONS="-XX:+UseParallelGC -Xms250G -Xmx1100G"
+    mkdir ${outputdir}"/HIC_tmp"
+    if [ "$qc" = 1 ] || [ "$insitu" = 1 ]
+    then
+	resstr="-r 2500000,1000000,500000,250000,100000,50000,25000,10000,5000,2000,1000"
+    else
+	resstr="-r 2500000,1000000,500000,250000,100000,50000,25000,10000,5000,2000,1000,500,200,100"
+    fi
+    if [ "$nofrag" -eq 1 ]
+    then
+	fragstr=""
+    else
+	fragstr="-f $site_file"
+    fi
+
+    time ${juiceDir}/scripts/common/juicer_tools pre -n -s $outputdir/inter.txt -g $outputdir/inter_hists.m $fragstr $resstr $threadHicString $outputdir/merged1.txt $outputdir/inter.hic $genomePath
+    time ${juiceDir}/scripts/common/juicer_tools addNorm $threadNormString ${outputdir}/inter.hic
+    
+    rm -R ${outputdir}"/HIC_tmp"
+    date
+    mkdir ${outputdir}"/HIC30_tmp"
+    time ${juiceDir}/scripts/common/juicer_tools pre -n -s $outputdir/inter_30.txt -g $outputdir/inter_30_hists.m $fragstr $resstr $threadHic30String $outputdir/merged30.txt $outputdir/inter_30.hic $genomePath
+    time ${juiceDir}/scripts/common/juicer_tools addNorm $threadNormString ${outputdir}/inter_30.hic
+   
+    rm -R ${outputdir}"/HIC30_tmp"
+    # POSTPROCESSING 
+    if [ "$qc" != 1 ]
+    then
+	${juiceDir}/scripts/common/juicer_postprocessing.sh -j ${juiceDir}/scripts/common/juicer_tools -i ${outputdir}/inter_30.hic -m ${juiceDir}/references/motif -g ${genomeID}  
+    fi
+fi
+#CHECK THAT PIPELINE WAS SUCCESSFUL
+export early=$earlyexit
+export splitdir=$splitdir
+export outputdir=$outputdir
+if ${juiceDir}/scripts/common/check.sh && [ "$cleanup" = 1 ]
+then
+    ${juiceDir}/scripts/common/cleanup.sh
+fi	
+
