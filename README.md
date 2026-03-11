@@ -2,13 +2,13 @@
 Code for interior Douglas-fir (_Pseudotsuga menziesii_ var. _glauca_) de novo assembly project.
 
 
-#Genome Assembly
+# Genome Assembly
 
-##Polishing and Manual Curation
+## Polishing and Manual Curation
 
 Upon curating Hi-C maps with Juicer on initial scaffolded assembly, several major misassemblies were noted. To correct these, we used Juicer and the 3D-DNA pipeline to computationally and, using JBAT tools, manually correct these misassemblies.
 
-Juicer has a SLURM version of it's pipeline. For my particular server, the script is not compatible, and I found it more effective to modify the CPU version of Juicer to suit my needs. Additionally, Juicer nativelty relies on SAM alignment files, which may be feasible for some, but given the size of the Douglas-fir genome, I needed store alignments in BAM format. So I modified the scripts to store alignmenmts as BAMs, and then pass decompressed SAM files to Juicer commands through `samtools view` and a pipe. Different versions of modified Juicer scripts are found here: `genome_assembly/manual_curation_modules/juicer_*.sh`
+The Juicer program has a SLURM version. For my particular server, the script is not compatible, and I found it more effective to modify the CPU version of Juicer to suit my needs. Additionally, Juicer nativelty relies on SAM alignment files, which may be feasible for some, but given the size of the Douglas-fir genome, I needed store alignments in BAM format. So I modified the scripts to store alignmenmts as BAMs, and then pass decompressed SAM files to Juicer commands through `samtools view` and a pipe. Different versions of modified Juicer scripts are found here: `genome_assembly/manual_curation_modules/juicer_*.sh`
 
 For the 3D-DNA pipeline, due to the size and low complexity of the Douglas-fir genome (~70% repetitive), we increased splitting, editing and polishing parameters to make the editing less sensitive and correcting false misjoins.
 
