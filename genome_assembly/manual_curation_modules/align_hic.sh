@@ -1,0 +1,60 @@
+#!/bin/bash
+#SBATCH -J alnhic_array
+#SBATCH -p general
+#SBATCH -q general
+#SBATCH -n 1
+#SBATCH -c 10
+#SBATCH --mem=40G
+#SBATCH --array=[0-299]
+#SBATCH -o %x.%A.%a.out
+#SBATCH -e %x.%A.%a.err
+
+set -e
+
+echo "`date`[M]: Host Name: `hostname`"
+module load bwa/0.7.17
+module load samtools/1.20
+
+export SLURM_ARRAY_TASK_ID=$SLURM_ARRAY_TASK_ID
+
+home=/home/FCAM/msmith
+scratch=/scratch/msmith
+core=/core/projects/EBP/smith
+jd=${core}/juicer_formanualcur
+gid="intdf137"
+workdir=${jd}/work/${gid}
+ref=${jd}/references/interior_primary_final.fa
+ref_name=$(basename ${ref})
+fq_dir=${workdir}/fastq
+bam_dir=${workdir}/splits
+
+cd ${fq_dir}
+fqs=($(cat fastqs.txt))
+r1=${fqs[$SLURM_ARRAY_TASK_ID]}
+r1_string="_R1"
+name=${r1//$r1_string/}
+r2=$(echo "$r1" | sed 's/R1/R2/')
+out="${name//.gz/}.bam"
+sampleName="HiC_sample"
+libraryName="HiC_library"
+site="Arima"
+threads=6
+
+rg="@RG\\tID:${name}\\tSM:${sampleName}\\tPL:LS454\\tLB:${libraryName}"
+
+echo -e "`date`[M]: Welcome to task ${SLURM_ARRAY_TASK_ID}."
+echo -e "`date`[M]: We are aligning ${r1} and ${r2} to ${ref_name}.\n"
+
+#create an unsorted alignment file first
+#I ran into issues piping alignment straight through to sorted bam, so doing it in two steps
+#Keep in mind the disk space this will use up
+bwa mem -SP5M -t 8 -R "$rg" "$ref" "$r1" "$r2" | samtools view -b -o "${bam_dir}/${name//.gz/}.unsorted.bam" -
+samtools sort -n -@ 8 -m 2000M -O "bam" -o "${bam_dir}/${out}" "${bam_dir}/${name//.gz/}.unsorted.bam" && rm "${bam_dir}/${name//.gz/}.unsorted.bam"
+
+echo -e "\n`date`:[M]: Alignment complete. Removing fastqs for disk and moving alignment file..."
+rm "$r1" "$r2"
+touch ${workdir}/fastq/${name//.fastq.gz/}_R1.fastq
+touch ${workdir}/fastq/${name//.fastq.gz/}_R2.fastq
+cd ${workdir}/splits
+ln -s ../fastq/${name//.fastq.gz/}_R1.fastq .
+ln -s ../fastq/${name//.fastq.gz/}_R2.fastq .
