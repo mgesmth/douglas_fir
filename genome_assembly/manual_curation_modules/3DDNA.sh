@@ -1,0 +1,37 @@
+#!/bin/bash
+#SBATCH -J run_3DDNA
+#SBATCH -p himem
+#SBATCH -q himem
+#SBATCH -c 36
+#SBATCH --mem=1000G
+#SBATCH -o %x.%j.out
+#SBATCH -e %x.%j.err
+
+set -e
+
+echo -e "`date`:[M]: Host Name: `hostname`"
+
+module load samtools/1.19 bwa/0.7.17 java/22
+export PATH="${core}/bin/3d-dna:$PATH"
+module load gnu-parallel/20160622 lastz/1.04.03 python/3.8.1
+
+home=/home/FCAM/msmith
+core=/core/projects/EBP/smith
+scratch=/scratch/msmith
+gid="intdf137"
+site="Arima"
+threads=36
+jd=${core}/juicer_formanualcur
+out_fulldir=${core}/3ddna_again
+prim=${core}/CBP_assemblyfiles/interior_primary_final.fa
+merged_nodups=${jd}/work/intdf137/aligned/merged_nodups.txt
+export TMPDIR=${scratch}
+
+cd ${out_fulldir}
+
+echo -e "\n`date`:[M]: Beginning full 3DDNA pipeline.\n"
+${core}/bin/3d-dna/run-asm-pipeline.sh --splitter-coarse-stringency 65 \
+--splitter-fine-resolution 1000000 --splitter-coarse-resolution 2500000 \
+--editor-coarse-stringency 65 --editor-fine-resolution 500000 \
+--editor-coarse-resolution 1000000 --editor-coarse-region 3000000 \
+${prim} ${merged_nodups}
